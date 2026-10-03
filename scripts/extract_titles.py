@@ -22,6 +22,15 @@ import sys
 from collections import Counter
 
 
+def _require_deps() -> None:
+    """启动自检：硬依赖缺失时打印安装提示并非零退出。"""
+    try:
+        import pymupdf  # noqa: F401
+    except ImportError:
+        print("缺少硬依赖 pymupdf。安装: pip install pymupdf（需 Python 3.10+）", file=sys.stderr)
+        sys.exit(1)
+
+
 def collect_lines(doc) -> list[dict]:
     """聚合每页每个文本行为 (page, y, size, text)；行内 span 按位置拼接。"""
     lines: list[dict] = []
@@ -98,6 +107,7 @@ def cluster_levels(sizes: set[float], tol: float = 0.8) -> dict[float, int]:
 
 
 def main() -> None:
+    _require_deps()
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("pdf")
     ap.add_argument("--out", help="titles.txt 输出路径（级别|标题|物理页码）")

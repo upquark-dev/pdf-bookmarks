@@ -19,6 +19,18 @@ import os
 import sys
 
 
+def _require_deps() -> None:
+    """启动自检：硬依赖（pymupdf、pillow）缺失时打印安装提示并非零退出；
+    numpy 为软依赖，缺失时色彩扫描自动降级为抽样计算（用到处提示一次）。"""
+    try:
+        import pymupdf  # noqa: F401
+        from PIL import Image  # noqa: F401
+    except ImportError as e:
+        pip_name = "pillow" if e.name == "PIL" else "pymupdf"
+        print(f"缺少硬依赖 {pip_name}。安装: pip install pymupdf pillow（需 Python 3.10+）", file=sys.stderr)
+        sys.exit(1)
+
+
 def parse_pages(spec: str, page_count: int) -> list[int]:
     pages: list[int] = []
     for part in spec.split(","):
@@ -36,12 +48,19 @@ def parse_pages(spec: str, page_count: int) -> list[int]:
     return pages
 
 
+_NP_HINTED = False
+
+
 def page_stats(pix) -> tuple[float, float]:
     """返回 (平均饱和度, 彩色像素占比)。优先用 numpy，缺失时纯 Python 抽样。"""
+    global _NP_HINTED
     try:
         import numpy as np
     except ImportError:
         np = None
+        if not _NP_HINTED:
+            _NP_HINTED = True
+            print("提示: 未安装 numpy（软依赖，pip install numpy 可加速色彩扫描）；缺失时自动降级为抽样计算。")
     if np is not None:
         a = np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.height, pix.width, pix.n)[:, :, :3].astype(int)
         sat = a.max(axis=2) - a.min(axis=2)
@@ -111,6 +130,7 @@ def cmd_sheets(args) -> None:
 
 
 def main() -> None:
+    _require_deps()
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
 

@@ -1,6 +1,15 @@
 ---
 name: pdf-bookmarks
-description: 为扫描版 PDF（无文本层、无内嵌书签）按印刷结构添加分级书签（常规两级：1=章，2=节）。覆盖标题识别（有目录页/无目录页两条路径，渲染成图目视转录，不用 OCR）、页码偏移实测验证，以及三种落地方式：①导出《csvtopdfbkmk》样式的书签 CSV；②导出福昕高级 PDF 编辑器可导入的书签 XML；③用 pymupdf 直接把书签写入 PDF。凡涉及"给 PDF 加书签/加目录/做书签、书签 CSV、书签 XML、csvtopdfbkmk、福昕书签导入、扫描版教材添加书签"的任务都使用本 skill，即使用户没有明说"书签"二字。
+description: 为扫描版 PDF（无文本层、无内嵌书签）按印刷结构添加分级书签（常规两级：1=章，2=节）。覆盖标题识别（有目录页/无目录页两条路径，渲染成图目视转录，不用 OCR）、页码偏移实测验证，以及三种落地方式：①导出《csvtopdfbkmk》样式的书签 CSV；②导出福昕高级 PDF 编辑器可导入的书签 XML；③用 pymupdf 直接把书签写入 PDF。凡涉及"给 PDF 加书签/加目录/做书签、书签 CSV、书签 XML、csvtopdfbkmk、福昕书签导入、扫描版教材添加书签"的任务都使用本 skill，即使用户没有明说"书签"二字。依赖：Python 3.10+，硬依赖 pymupdf、pillow（`pip install pymupdf pillow`，脚本启动时自检，缺失会打印安装提示）；软依赖 numpy（加速色彩扫描）、tkinter（保存对话框，Windows 官方 Python 自带）、csvtopdfbkmk 源码（仅 parity 比对用）。
+prerequisites:
+  python: "3.10+"
+  required:
+    - "pymupdf（pip install pymupdf）"
+    - "pillow（pip install pillow）"
+  optional:
+    - "numpy（软依赖：加速色彩扫描；缺失时自动降级为抽样计算并提示）"
+    - "tkinter（软依赖：保存对话框；Windows 官方 Python 自带，Linux 需 python3-tk；缺失时退回默认路径）"
+    - "csvtopdfbkmk 源码（仅 parity 子命令需要，--tool-dir / CSVTOPDFBKMK_DIR 指定）"
 ---
 
 # 扫描版 PDF 添加书签
@@ -10,7 +19,7 @@ description: 为扫描版 PDF（无文本层、无内嵌书签）按印刷结构
 [references/csv-format.md](references/csv-format.md) 和
 [references/xml-format.md](references/xml-format.md)，需要核对格式细节时再读。
 
-依赖：Python 3.10+，`pip install pymupdf pillow`（numpy 可选，缺失时色彩扫描自动降级为抽样计算）。
+依赖：Python 3.10+；硬依赖 `pymupdf`、`pillow`（`pip install pymupdf pillow`）；软依赖 `numpy`（加速色彩扫描，缺失自动降级为抽样计算）、`tkinter`（保存对话框，Windows 官方 Python 自带；缺失时退回默认路径）、csvtopdfbkmk 源码（仅 `parity` 子命令需要）。各脚本启动时自检依赖：缺硬依赖会打印安装提示并以非零码退出，软依赖缺失自动降级并提示。
 安装与分发说明见 [README.md](README.md)。
 下文命令中的脚本路径相对本 skill 目录（`scripts/…`），执行时用绝对路径。
 

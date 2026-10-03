@@ -39,6 +39,16 @@ REQUIRED_FIELDS = {"级别", "标题", "物理页码"}
 DIALOG = "\x00save-dialog"  # --csv/--xml 不带值时的哨兵：弹出另存为对话框
 
 
+def _require_deps() -> None:
+    """启动自检：硬依赖缺失时打印安装提示并非零退出；软依赖（numpy/tkinter）缺失时
+    在用到处自动降级并提示。"""
+    try:
+        import pymupdf  # noqa: F401
+    except ImportError:
+        print("缺少硬依赖 pymupdf。安装: pip install pymupdf（需 Python 3.10+）", file=sys.stderr)
+        sys.exit(1)
+
+
 class BookmarkError(Exception):
     pass
 
@@ -208,8 +218,11 @@ def ask_save_path(default_path: str) -> str | None:
     try:
         import tkinter as tk
         from tkinter import filedialog
-    except Exception as e:  # 无显示环境等
-        print(f"无法打开保存对话框（{e}），改用默认路径: {default_path}")
+    except Exception as e:  # 无 tkinter、无显示环境等（tkinter 为软依赖）
+        msg = f"无法打开保存对话框（{e}），改用默认路径: {default_path}"
+        if "No module named 'tkinter'" in str(e):
+            msg += "（tkinter 缺失：Windows 官方 Python 自带；Linux 需 python3-tk）"
+        print(msg)
         return default_path
     root = tk.Tk()
     root.withdraw()
@@ -358,6 +371,7 @@ def parity(csv_path: str, xml_path: str, max_depth: int | None, tool_dir: str | 
 # ---------- 命令行 ----------
 
 def main() -> None:
+    _require_deps()
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
 
