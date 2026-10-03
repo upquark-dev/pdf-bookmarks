@@ -23,9 +23,10 @@
    ```bash
    # 方式 A：git 克隆（便于跟随更新）
    git clone https://github.com/upquark-dev/pdf-bookmarks "<你的用户目录>/.agents/skills/pdf-bookmarks"
-
-   # 方式 B：直接复制整个 pdf-bookmarks/ 文件夹过去
    ```
+
+   - 方式 B（网页端，无需命令行）：打开 [Releases 页](https://github.com/upquark-dev/pdf-bookmarks/releases)，下载当前版本的 `pdf-bookmarks-vX.Y.Z.zip`，解压得到 `pdf-bookmarks/` 文件夹，整个放入 skills 目录。zip 由 `git archive` 从对应 tag 生成，内容与该版本完全一致。
+   - 方式 C：直接复制整个 `pdf-bookmarks/` 文件夹过去。
 
    装到用户级（`<你的用户目录>/.agents/skills/`）则所有工作区可用；装到 `<项目>/.agents/skills/` 则仅该项目可用。不同工具的 skills 目录位置可能不同，以所用工具的文档为准。
 
